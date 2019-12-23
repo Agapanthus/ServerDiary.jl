@@ -1,15 +1,5 @@
-
-
-# List of all commands and keywords to generate
-global QUERY = [["u", ""], ["b", ""],["n", "DEV"], ["F", ""], ["r", ""], ["S", ""], ["v", ""], ["w", ""], ["y", ""],
- ["q", ""], 
- ["n", "EDEV"], ["n", "IP"], ["n", "EIP"], ["n", "IP6"], ["n", "SOCK"], ["n", "TCP"], ["n", "UDP"],
- ["d", ""], ["B", ""], ["H", ""], 
- ["m", "CPU"], ["m", "FAN"], ["m", "TEMP"], ["m", "FREQ"]] 
-
-const SHOW_DAYS = 3
-
 using Dates
+include(joinpath(@__DIR__, ".." , "conf.jl"))
 include(joinpath(@__DIR__, "sarDB.jl"))
 include(joinpath(@__DIR__, "util.jl"))
 include(joinpath(@__DIR__, "plot.jl"))
@@ -116,8 +106,7 @@ end
 # - points, like "LINUX RESTART"
 # - labels for the columns
 # - description, what the command did
-function collectData(command::String, keyword::String, days::Int, today::DateTime)
-    
+function collectData(command::String, keyword::String, days::Int, today::DateTime)  
     # Collect sar data for several days
     local description, header, data, myCommands, points = getSarDay(command, keyword, today)
     for day in 1:days-1
@@ -175,8 +164,9 @@ function collectData(command::String, keyword::String, days::Int, today::DateTim
 end
 
 
-function getGraphSysstat(command::String, keyword::String, today::DateTime)
+function getGraph(command::String, keyword::String, today::DateTime)::Array{Tuple{String, Any, String, String},1}
     local datas, points, header, description
+    local results = []
     if length(keyword) == 0
         datas, points, header, description = collectData(command, "", SHOW_DAYS, today)
     else 
@@ -184,11 +174,12 @@ function getGraphSysstat(command::String, keyword::String, today::DateTime)
     end
     for data in datas
         local title = "-$(command) $(keyword) " * reduce(*, map(d->"$(d[1])=$(d[3]) ", data[1]))
+        local specialization = reduce(*, map(d->" $(d[1])=$(d[3])", data[1]))
         local exDescription = description * "\n" * reduce(*, map(d->"$(d[3]) ($(d[1])) - $(d[2])\n", data[1]))
         
-        local pngPath = "$(BASE_PATH)/stats/$(Dates.format(Dates.now(), "yyyy-mm-dd"))/" 
+        local pngPath = joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) 
         mkpath(pngPath)
-        local pngPlace = "$pngPath$(title[2:end])"
+        local pngPlace = joinpath(pngPath, title[2:end])
 
         # Generate the image
         makeDiagram(data[2], points, header, 
@@ -198,14 +189,16 @@ function getGraphSysstat(command::String, keyword::String, today::DateTime)
             )
         
         pngPlace *= ".png"
-        @assert isfile("$pngPlace")
+        @assert isfile("$pngPlace") "Error saving the Plot"
 
         # Apply strong png compression to make e-mail smaller
         exe(`pngquant --quality=60-80 --force --output $pngPlace $pngPlace`)
 
         # cleanup
         # rm("$pngPlace")
-        return "$pngPlace", header, exDescription
+        push!(results, ("$pngPlace", header, exDescription, specialization))
 
     end
+
+    return results
 end

@@ -1,5 +1,4 @@
 const BASE_PATH = normpath(joinpath(@__DIR__, ".."))
-const USE_HTML = false # not supported
 
 # remove old log (it will grow fast)
 isfile("$(BASE_PATH)sar_stats.log") && rm("$(BASE_PATH)sar_stats.log")
@@ -10,16 +9,7 @@ function logger(payload::Any, message::String = "", console::Bool=false; failed:
         println(io, payload)
         println(io, "")
         if console
-            if USE_HTML 
-                local cl = "body"
-                if failed
-                    cl = "error"
-                end
-                payload = replace("$payload", "\n"=>"\n<br>")
-                println("<div><span class='time'>$(Dates.now())</span> # <span class='$cl'>$message</span> # <span class='details'>$payload</span></div>")
-            else
-                println("$(Dates.now()) # $message # $payload")
-            end
+            println("$(Dates.now()) # $message # $payload")
         end
     end
 end

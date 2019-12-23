@@ -1,28 +1,68 @@
 using Base64
 using Random
 
-mutable struct Email
-    parts::Array{String,1}
-    body::String
-    cidId::Int
-    overview::String
+# Will convert all relative links in th E-Mail to cid links 
+# and return a list of HTML-multipart sections containing the images
+function encodeImages(html::String, imgPath::String)::Tuple{String, Array{String,1}}
+
+    local pos = 1    
+    local plotId = 1
+    local parts = []
+
+    while true
+        local range = findnext(r"src=\"[^\"]+\"", html, pos)
+        range === nothing && break
+        pos = range.start + 5
+
+        # Base64-encode the image file
+        local io = IOBuffer();
+        local iob64_encode = Base64EncodePipe(io);
+        open( joinpath(imgPath, html[range][6:end-1]) ) do file
+            local str =  read(file)
+            write(iob64_encode, str)
+        end
+        close(iob64_encode);
+        local base64 = String(take!(io))
+
+        # Generate a beautiful cid
+        local cid = "plot$(plotId)"
+        plotId += 1
+
+        push!(parts, """Content-Type: image/png;
+ name="file.png"
+Content-Transfer-Encoding: base64
+Content-ID: <$cid>
+Content-Disposition: inline;
+ filename="file.png"
+
+$base64
+""")
+
+        html = replace(html, html[range]=>"src=\"cid:$cid\"", count=1)
+    end
+
+    return html, parts
 end
 
-Email() = Email([], "", 1, "")
+# given a html and a path relative to which images can be found on the disk,
+# generate a e-mail with given subject and recipient
+function makeEmail(html::String, imgPath::String, to::String, subject::String)::String
+    logger("subject=$subject, to=$to", "Generating Email")
+    local html2, parts = encodeImages(html, imgPath)
 
-function finish(email::Email, to::String, subject::String)
-
+    # we have two kinds of boundaries - those of the "multipart/alternative" and 
+    # those of the embedded "multipart/related"
     local boundary = "----------" * randstring(14)    
     local boundaryA = "----------" * randstring(14)
 
+    # insert boundary between parts
     local moreParts = ""
-    for part in email.parts
+    for part in parts
         moreParts *= "\n--$boundary\n"
         moreParts *= part
     end
 
     # return the E-Mail
-
     return """To: $to
 Subject: $subject
 MIME-Version: 1.0
@@ -47,32 +87,7 @@ Content-Type: multipart/related;
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
-<html>
-    <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <style>
-    .time {
-        color: grey;
-    }
-    .body {
-        color: blue;
-    }
-    .details {
-        color: black;
-    }
-    .error {
-        color: red;
-        font-weight: bold;
-    }
-    </style>
-    </head>
-    <body>
-    <p>
-        $(email.overview)
-    </p>
-    $(email.body)
-    </body>
-</html>
+$html2
 
 $moreParts
 --$boundary--
@@ -82,34 +97,3 @@ $moreParts
 
 end
 
-function appendGraphToEmail(email, path, header, description)
-    local cid = "part$(email.cidId).06090408.01060107"
-    email.cidId += 1
-
-    header = header[2:end]
-    email.body *= "<p>" * replace("$description", "\n"=>"\n<br>") * "</p><p><img src=\"cid:$cid\" alt=\"\"></p><p>\n" * reduce(*, map(x->"$(x[1]) - $(x[2]) <br>\n", header)) * "</p>"
-
-    email.overview *= "<img src=\"cid:$cid\" alt=\"\" height=\"$(HEIGHT÷3)\" width=\"$(WIDTH÷3)\">"
-
-    # Encode the image file
-    local io = IOBuffer();
-    local iob64_encode = Base64EncodePipe(io);
-    open(path) do file
-        local str =  read(file)
-        write(iob64_encode, str)
-    end
-    close(iob64_encode);
-    local base64 = String(take!(io))
-
-    push!(email.parts, """Content-Type: image/png;
-    name="file.png"
-Content-Transfer-Encoding: base64
-Content-ID: <$cid>
-Content-Disposition: inline;
-    filename="file.png"
-
-$base64
-""")
-
-    return email
-end

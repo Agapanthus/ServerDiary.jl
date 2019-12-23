@@ -1,19 +1,17 @@
-
-using Plots 
-# Don't try to open windows for the plots
-ENV["GKSwstype"]="nul"
-gr()
+println("Loading Plots...")
+@time begin 
+    using Plots 
+    # Don't try to open windows for the plots
+    ENV["GKSwstype"]="nul"
+    gr()
+    # init it now
+    plot([0],[0])
+end
 
 using Dates
 
 include(joinpath(@__DIR__, "util.jl"))
-
-
-const WIDTH = 1400
-const HEIGHT = 430
-const NUMBER_OF_TICKS = -3  # Positive: number of ticks. Negative: Distance in hours between ticks
-const CUT_N_TIMES_MEAN = 0 # Hide the most extreme outliers, 0=disabled
-global HIDE = ["%idle"]
+include(joinpath(@__DIR__, ".." , "conf.jl"))
 
 
 function makeDiagram(data, points, header, description, title, saveTo)
