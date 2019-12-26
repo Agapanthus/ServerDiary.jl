@@ -7,7 +7,11 @@ include(joinpath(@__DIR__, "plot.jl"))
 
 function sarExe(cmd)   
     local res = exe(cmd)
-    @assert length(res[2]) == 0 "stderr: res[2]"
+    if strip(res[2]) == "End of system activity file unexpected" 
+        # TODO: Warning, not Error
+    else
+        @assert length(res[2]) == 0 "stderr: $(res[2])"  
+    end
     @assert length(res[1]) > 0 "stdout empty!"
     return res[1]
 end
@@ -62,11 +66,13 @@ function getSarDay(command::String, keyword::String, useDate::DateTime)
     data = filter(x->x[1]!="Average:", data)
 
     # the last value might be next day
-    if data[end][1][1:3] == "00:"
-        data[end][1] = "23:59:59"
-    end
-    if data[end-1][1][1:3] == "00:"
-        data[end-1][1] = "23:59:58"
+    if length(data) > 1 && data[length(data)÷2][1][1:3] != "00:"
+        if data[end][1][1:3] == "00:"
+            data[end][1] = "23:59:59"
+        end
+        if data[end-1][1][1:3] == "00:"
+            data[end-1][1] = "23:59:58"
+        end
     end
 
     # Parse Dates
@@ -164,41 +170,17 @@ function collectData(command::String, keyword::String, days::Int, today::DateTim
 end
 
 
-function getGraph(command::String, keyword::String, today::DateTime)::Array{Tuple{String, Any, String, String},1}
-    local datas, points, header, description
-    local results = []
-    if length(keyword) == 0
-        datas, points, header, description = collectData(command, "", SHOW_DAYS, today)
-    else 
-        datas, points, header, description = collectData(command, keyword, SHOW_DAYS, today)
-    end
+
+
+function collectData(command::String, keyword::String, from::DateTime, to::DateTime)
+    local days = Dates.days(to - from - Dates.Millisecond(1)) + 1
+    
+    local datas, points, header, description = collectData(command, keyword, days, to)
+
     for data in datas
-        local title = "-$(command) $(keyword) " * reduce(*, map(d->"$(d[1])=$(d[3]) ", data[1]))
-        local specialization = reduce(*, map(d->" $(d[1])=$(d[3])", data[1]))
-        local exDescription = description * "\n" * reduce(*, map(d->"$(d[3]) ($(d[1])) - $(d[2])\n", data[1]))
-        
-        local pngPath = joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) 
-        mkpath(pngPath)
-        local pngPlace = joinpath(pngPath, title[2:end])
-
-        # Generate the image
-        makeDiagram(data[2], points, header, 
-            exDescription, 
-            title,
-            pngPlace
-            )
-        
-        pngPlace *= ".png"
-        @assert isfile("$pngPlace") "Error saving the Plot"
-
-        # Apply strong png compression to make e-mail smaller
-        exe(`pngquant --quality=60-80 --force --output $pngPlace $pngPlace`)
-
-        # cleanup
-        # rm("$pngPlace")
-        push!(results, ("$pngPlace", header, exDescription, specialization))
-
+        data = (data[1], filter(x->from <= x[1] <= to, data[2]))
     end
+    points = filter(x->from <= x[1] <= to, points)
 
-    return results
+    return datas, points, header, description
 end

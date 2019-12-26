@@ -52,10 +52,14 @@ function logException(f, operation)
 end
 
 
-function pseudoColumn(data, n)
+function pseudoColumn(data::Array{Array{Any,1},1}, n::Int)::Array{Any,1}
     local column = []
     for d in data
         push!(column, d[n])
     end
     return column
+end
+
+function sanitizeFile(name::String)::String
+    return replace(name, r"(\/|\\)"=>"?")
 end

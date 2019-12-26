@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "src", "stats.jl"))
+include(joinpath(@__DIR__, "src", "widget.jl"))
 include(joinpath(@__DIR__, "src", "email.jl"))
 include(joinpath(@__DIR__, "src", "html.jl"))
 include(joinpath(@__DIR__, "src", "args.jl"))
@@ -10,17 +10,19 @@ begin
     local args = getArguments()
     local path = ""
 
-    for cmd in QUERY
+    for widget in QUERY
+        # TODO: Debug
         #logException(_->begin
-            local results = getGraph(cmd[2], cmd[3], today)
+            local results = renderWidget(widget, today)
             for (pngPath, header, description, specialization) in results
                 path = pngPath
-                doc = appendGraph(doc, basename(pngPath), header, description, cmd[1] * specialization)
+                doc = appendGraph(doc, basename(pngPath), header, description, widget.title * specialization)
             end
-         #end, "gettings sar data for $cmd")
+        #end, "gettings sar data for $(widget.title)")
     end
     
     local html = generateHTML(doc)
+
     open( normpath(joinpath(path, "..", "stats.html")), "w") do io
         print(io, html)
     end
