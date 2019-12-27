@@ -22,3 +22,7 @@ function defaultStyles()::Dict{String,Any}
         "offset" => 0.0,
     )
 end
+
+
+using Formatting
+global Y_FORMATTER = yi -> replace(format(yi, commas = true), "," => " ")

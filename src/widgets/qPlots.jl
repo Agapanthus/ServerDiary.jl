@@ -12,9 +12,7 @@ include("qStacks.jl")
 include("qStyles.jl")
 include("qAttributes.jl")
 
-
-using Formatting
-global Y_FORMATTER = yi -> replace(format(yi, commas = true), "," => " ")
+include("../providers/data.jl")
 
 ###############################
 
@@ -195,6 +193,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
     
     addPoints!(points, ctx)
     addTicks!(dates, ctx)
+    plot!(ctx.plot, yformatter = Y_FORMATTER)
 
     # save to plot
     mkpath(saveTo)

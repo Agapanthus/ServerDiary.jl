@@ -68,24 +68,53 @@ function getSarDay(command::String, keyword::String, useDate::DateTime)
     )
     data = data[2:end] # drop title
 
-    # filter averaging rows
+    # filter out averaging rows
     data = filter(x -> x[1] != "Average:", data)
 
-    # the last value might be next day
-    if length(data) > 1 && data[length(data)÷2][1][1:3] != "00:"
-        if data[end][1][1:3] == "00:"
-            data[end][1] = "23:59:59"
+    # Corruption detection 
+    # sometimes some values are corrupted... don't know how this happens
+    # but at least you don't want your whole plot to be messed up
+    local howMany1 = 0
+    for i in 1:length(data)
+        local found = false
+
+        if data[i][1] == "01:00:00"
+            howMany1 += 1
+            if howMany1 >= SYSSTAT_CORRUPTION_MARGIN
+                found = true
+            end
         end
-        if data[end-1][1][1:3] == "00:"
-            data[end-1][1] = "23:59:58"
+
+        for el in data[i][2:end]
+            if isNumericString(el) && parse(Float64, el) >= SYSSTAT_CORRUPTION_THRESHOLD
+                found = true
+            end
+        end
+        if found
+            logger("", "Found some strange systemctl values at $useDate. Ignored them.", true)
+            logger(data[max(1, i-SYSSTAT_CORRUPTION_MARGIN)+1:end], "Removed these values", false)
+
+            data = data[1:max(1, i-SYSSTAT_CORRUPTION_MARGIN)]
+
+            break
         end
     end
+    # TODO: Error log for removed values
 
     # Parse Dates
     map(x -> begin
         x[1] = DateTime(date * x[1], "yyyy-mm-dd HH:MM:SS")
         x
     end, data)
+
+    # The dates are always increasing, but might continue on the next day. So fix this.
+    local lastDate = data[1][1]
+    for i in 1:length(data)
+        if data[i][1] < lastDate
+            data[i][1] += Dates.Day(1)
+        end
+        lastDate = data[i][1]
+    end
 
     # filter point data, like reboot
     local points = []
