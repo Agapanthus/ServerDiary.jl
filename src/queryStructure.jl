@@ -41,6 +41,7 @@ mutable struct QGroup <: QueryStruct
     unit::String
     max::Union{Nothing,<:Number}
     min::Union{Nothing,<:Number}
+    log::Bool
     data::Array{<:QueryStruct,1}
 end
 # assigns the unit to this group. Use this, to plot different units in the same plot
@@ -48,8 +49,9 @@ QGroup(
     unit::String;
     max::Union{Nothing,<:Number} = nothing,
     min::Union{Nothing,<:Number} = nothing,
+    log::Bool = false,
     data::Array{<:QueryStruct,1} = [],
-) = QGroup(unit, max, min, data)
+) = QGroup(unit, max, min, log, data)
 
 
 ############ Providers
@@ -72,3 +74,4 @@ end
 struct Postfix <: DataAttribute
     property::String
 end
+

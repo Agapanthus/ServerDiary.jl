@@ -1,6 +1,9 @@
 # Positive: number of ticks. Negative: Distance in hours between ticks
 const NUMBER_OF_TICKS = -3
 
+using Colors
+# For color preview, look here: https://www.december.com/html/spec/colorsvg.html
+
 # Hide the most extreme outliers, 0=disabled
 # const CUT_N_TIMES_MEAN = 0
 
@@ -9,34 +12,69 @@ include(joinpath(@__DIR__, "src", "queryStructure.jl"))
 # if no size is given, this size is used for the plot
 const DEFAULT_SIZE = (1400, 430)
 
+# make nights slightly blue
+const DRAW_NIGHT_BACKGROUND = true
+
 # List of all commands and keywords to generate graphs for
 global QUERY = Array{QWidget,1}([
 
-    QPlot(
-        "CPU",
-        days = 3,
-        data = [QStack([
-            Sysstat("%steal"),
-            Sysstat("%iowait"),
-            Sysstat("%system"),
-            QStyled(Sysstat("%nice"), Dict("fillalpha" => 0.2)),
-            Sysstat("%user"),
-        ])]
-    ),
-
     #=
     QPlot(
-        "I/O",
-        days = 3,
+        "Demoplot",
+        days = 5,
         data = [
-            QStack([Sysstat("tps"), Sysstat("rtps"), Sysstat("wtps")]),
-            QGroup("blocks/s", data = [Sysstat("bread/s"), Sysstat("bwrtn/s")]),
+            QGroup(
+                "packets/s",
+                log = true,
+                data = [
+                    QStack([
+                        QStyled(Sysstat("wtps"), Dict("color" => :red)),
+                        QStyled(Sysstat("rtps"), Dict("color" => :royalblue))
+                    ]), 
+                    QStyled(Sysstat("tps"), Dict("color" => :navy))
+                ],
+            ),
+            QStyled(
+                QGroup(
+                    "blocks/s",
+                    data = [Sysstat("bread/s"), Sysstat("bwrtn/s")]
+                ),
+                Dict("fillrange" => 0, "fillalpha" => 0.2),
+            ),
         ],
     ),
+    =#
 
     QPlot(
+        "I/O",
+        days = 4,
+        data = [
+            QGroup(
+                "packets/s",
+                log = true,
+                data = [
+                    QStack([
+                        QStyled(Sysstat("wtps"), Dict("color" => :red)),
+                        QStyled(Sysstat("rtps"), Dict("color" => :royalblue))
+                    ]), 
+                    # QStyled(Sysstat("tps"), Dict("color" => :navy))
+                ],
+            ),
+            QGroup(
+                "blocks/s",
+                data = [
+                    QStyled(QStack([
+                        QStyled(Sysstat("bread/s"), Dict("color" => :navy)), 
+                        QStyled(Sysstat("bwrtn/s"), Dict("color" => :maroon))
+                    ]), Dict("fillalpha" => 0.4))
+                ],
+            ),
+        ],
+    ),
+    
+    QPlot(
         "CPU",
-        days = 3,
+        days = 2,
         data = [QGroup(
             "%",
             min = 0,
@@ -44,15 +82,17 @@ global QUERY = Array{QWidget,1}([
             data = [
                 QStack([
                     Sysstat("%steal"),
+                    Sysstat("%nice"),
                     Sysstat("%iowait"),
                     Sysstat("%system"),
-                    QStyled(Sysstat("%nice"), Dict("fillalpha" => 0.2,)),
                     Sysstat("%user"),
                 ]),
             ],
         )],
     ),
-    =#
+
+
+
 
     # TODO: Monthly view
 
@@ -63,7 +103,7 @@ global QUERY = Array{QWidget,1}([
 
     #=
     ["Network Devices", "n", "DEV"],   
-                                        
+                                                
 
     ["", "F", ""], 
     ["RAM", "r", ""], 
@@ -72,9 +112,9 @@ global QUERY = Array{QWidget,1}([
     ["", "v", ""], 
     ["", "w", ""], 
     ["", "y", ""],
-                                     
+                                             
     ["", "q", ""], 
-                                     
+                                             
     ["", "n", "EDEV"], 
     ["", "n", "IP"], 
     ["", "n", "EIP"], 
@@ -82,11 +122,11 @@ global QUERY = Array{QWidget,1}([
     ["", "n", "SOCK"], 
     ["", "n", "TCP"], 
     ["", "n", "UDP"],
-                                     
+                                             
     ["", "d", ""], 
     ["", "B", ""], 
     ["", "H", ""], 
-                                     
+                                             
     ["CPU", "m", "CPU"], 
     ["Fan", "m", "FAN"], 
     ["Temperature", "m", "TEMP"], 
@@ -115,7 +155,7 @@ global QUERY = Array{QWidget,1}([
 
 # Color Theme
 # See https://github.com/JuliaPlots/PlotThemes.jl
-global PLOT_THEME = :wong
+global PLOT_THEME = :default # :wong
 
 # Show the last n days in the plot.
 const SHOW_DAYS = 3

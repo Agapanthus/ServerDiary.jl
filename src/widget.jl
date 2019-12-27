@@ -53,5 +53,3 @@ function renderWidget(widget::QWidget, today::DateTime, saveTo::String) #::Array
     return results
     =#
 end
-
-renderWidget(QUERY[1], Dates.now(), joinpath(BASE_PATH, "stats"))

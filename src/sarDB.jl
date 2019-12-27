@@ -1,26 +1,4 @@
-# taken from http://sebastien.godard.pagesperso-orange.fr/man_sar.html
-
-
-# This is a fallthrough-regex matcher. It will be the first matching unit (both regexes must match)
-# Furthermore, it will both scan the property name and the description (therefore the tuple).
-# TODO: unused
-const SAR_UNIT = Dict(
-    "pages/s" => (r"(\/s|ps)$", r"page.*per second"),
-    "blocks/s" => (r"(\/s|ps)$", r"blocks.*per second"),
-    "packets/s" => (r"(\/s|ps)$", r"packets.*per second"),
-    "messages/s" => (r"(\/s|ps)$", r"messages.*per second"),
-    "kB/s" => (r"kb\/s$", r"kilobytes.*per second"),
-    "n/s" => (r"(\/s|ps)$", r"number of.*per second"),
-
-    "%" => (r"^\%", "(P|p)ercentage"),
-    "kB" => (r"^kb", "kilobytes"),
-    "MB" => (r"^MB", "megabytes"),
-    "ms" => (r".*", r"milliseconds"),
-
-    # fallbacks
-    "x/s" => (r"(\/s|ps)$", r"per second"),
-    "number" => (r"", r"number of"),
-)
+# data taken from http://sebastien.godard.pagesperso-orange.fr/man_sar.html
 
 const SAR_DB = Dict(
     "B" => (
