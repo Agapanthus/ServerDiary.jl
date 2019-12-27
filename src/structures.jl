@@ -1,8 +1,6 @@
-
 abstract type QueryStruct end
 abstract type QWidget end
 abstract type DataAttribute <: QueryStruct end
-
 
 mutable struct QPlot <: QWidget
     title::String
@@ -31,7 +29,7 @@ QStack(content::QueryStruct) = QStack([content])
 #   color: line color
 #   fillcolor: fill color
 #   fillalpha: fill alpha
-mutable struct QStyled <: QueryStruct
+mutable struct QStyle <: QueryStruct
     data::QueryStruct
     overloads::Dict{String,Any}
 end
@@ -74,4 +72,46 @@ end
 struct Postfix <: DataAttribute
     property::String
 end
+
+##############
+
+using Dates
+
+mutable struct DataStore
+    data::Dict{Tuple{String,String},Dict{String,Tuple{Array{DateTime,1},Array{Float64,1}}}}
+    points::Dict{Tuple{String,String},Array{DateTime,1}}
+    descriptions::Dict{Tuple{String,String},String}
+end
+DataStore() = DataStore(Dict(), Dict(), Dict())
+
+
+###########
+
+
+mutable struct Palette
+    palette
+    index
+end
+
+mutable struct PlotContext
+    plot
+    palette::Palette
+    styles::Dict{String,Any}
+    today::DateTime
+    store::DataStore
+    maxDate::DateTime
+    minDate::DateTime
+    group::Int
+end
+PlotContext(;
+    plot = nothing,
+    palette = nothing,
+    styles::Dict{String,Any} = defaultStyles(),
+    today::DateTime = Dates.now(),
+    store::DataStore = DataStore(),
+    maxDate::DateTime = Dates.now(),
+    minDate::DateTime = Dates.now(),
+    group::Int = 0
+) = PlotContext(plot, palette, styles, today, store, maxDate, minDate, group)
+
 

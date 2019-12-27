@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "..", "conf.jl"))
+include("../../conf.jl")
 
 mutable struct StatsDocument
     parts::Dict{String,String}

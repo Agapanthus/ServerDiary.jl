@@ -17,11 +17,14 @@ Optionally, you can also install pngquant to compress the pngs and send smaller 
 
 To install and build the dependencies of julia, run `julia install.jl`. If you want to run this package as cronjob, make sure to run the `install.jl` from the same user as the cron job.
 
-Currently, the only supported backend is `sysstat`. So make sure `sysstat`, `sar` and `sadf` are installed and properly configured.
+Currently, the only supported backend is `sysstat`. So make sure `sysstat` and `sar` are installed and properly configured.
 
 ## Usage
 
-Run `julia server-diary.jl`. It will generate a file `stats.email` which is a multipart-html-email with images. You can send it using `sendmail -i -t < stats.email`.
+Run `julia ServerDiary.jl`. It will generate a file `stats.email` which is a multipart-html-email with images. You can send it using `sendmail -i -t < stats.email`.
 
 Old graphs are archived in the `stats` folder. Feel free to delete them if they become too many.
 
+## Notes
+
+To delete Julia's precompiled cache, run `rm -rf ~/.julia/compiled`

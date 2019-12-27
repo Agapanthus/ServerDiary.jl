@@ -1,0 +1,15 @@
+name = "ServerDiary"
+uuid = "511fecc2-9f21-4cbf-a455-7dcb0bf34e97"
+authors = ["eric "]
+version = "0.1.0"
+
+[deps]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
+JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+PlotThemes = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"

@@ -1,6 +1,9 @@
+
+include("../structures.jl")
+
 # data taken from http://sebastien.godard.pagesperso-orange.fr/man_sar.html
 
-const SAR_DB = Dict(
+global SAR_DB = Dict(
     "B" => (
         "-B",
         "Report paging statistics. The following values are displayed:",
@@ -640,31 +643,36 @@ const SAR_DB = Dict(
         "-u [ ALL ]",
         "Report CPU utilization. The ALL keyword indicates that all the CPU fields should be displayed. The report may show the following fields:",
         Dict(
+            "ALL" => (
+                "",
+                Dict(
+                    "%user" =>
+                        "Percentage of CPU utilization that occurred while executing at the user level (application). Note that this field includes time spent running virtual processors.",
+                    "%usr" =>
+                        "Percentage of CPU utilization that occurred while executing at the user level (application). Note that this field does NOT include time spent running virtual processors.",
+                    "%nice" =>
+                        "Percentage of CPU utilization that occurred while executing at the user level with nice priority.",
+                    "%system" =>
+                        "Percentage of CPU utilization that occurred while executing at the system level (kernel). Note that this field includes time spent servicing hardware and software interrupts.",
+                    "%sys" =>
+                        "Percentage of CPU utilization that occurred while executing at the system level (kernel). Note that this field does NOT include time spent servicing hardware and software interrupts.",
+                    "%iowait" =>
+                        "Percentage of time that the CPU or CPUs were idle during which the system had an outstanding disk I/O request.",
+                    "%steal" =>
+                        "Percentage of time spent in involuntary wait by the virtual CPU or CPUs while the hypervisor was servicing another virtual processor.",
+                    "%irq" =>
+                        "Percentage of time spent by the CPU or CPUs to service hardware interrupts.",
+                    "%soft" =>
+                        "Percentage of time spent by the CPU or CPUs to service software interrupts.",
+                    "%guest" =>
+                        "Percentage of time spent by the CPU or CPUs to run a virtual processor.",
+                    "%gnice" =>
+                        "Percentage of time spent by the CPU or CPUs to run a niced guest.",
+                    "%idle" =>
+                        "Percentage of time that the CPU or CPUs were idle and the system did not have an outstanding disk I/O request.",
 
-            "%user" =>
-                "Percentage of CPU utilization that occurred while executing at the user level (application). Note that this field includes time spent running virtual processors.",
-            "%usr" =>
-                "Percentage of CPU utilization that occurred while executing at the user level (application). Note that this field does NOT include time spent running virtual processors.",
-            "%nice" =>
-                "Percentage of CPU utilization that occurred while executing at the user level with nice priority.",
-            "%system" =>
-                "Percentage of CPU utilization that occurred while executing at the system level (kernel). Note that this field includes time spent servicing hardware and software interrupts.",
-            "%sys" =>
-                "Percentage of CPU utilization that occurred while executing at the system level (kernel). Note that this field does NOT include time spent servicing hardware and software interrupts.",
-            "%iowait" =>
-                "Percentage of time that the CPU or CPUs were idle during which the system had an outstanding disk I/O request.",
-            "%steal" =>
-                "Percentage of time spent in involuntary wait by the virtual CPU or CPUs while the hypervisor was servicing another virtual processor.",
-            "%irq" =>
-                "Percentage of time spent by the CPU or CPUs to service hardware interrupts.",
-            "%soft" =>
-                "Percentage of time spent by the CPU or CPUs to service software interrupts.",
-            "%guest" =>
-                "Percentage of time spent by the CPU or CPUs to run a virtual processor.",
-            "%gnice" =>     "Percentage of time spent by the CPU or CPUs to run a niced guest.",
-            "%idle" =>
-                "Percentage of time that the CPU or CPUs were idle and the system did not have an outstanding disk I/O request.",
-
+                ),
+            ),
         ),
     ),
     "v" => (
@@ -731,3 +739,24 @@ function iterateInfo()
         end
     end
 end
+
+
+function getCommand(attr::Sysstat)
+    for (letter, (command, description, content)) in SAR_DB
+        for (k, v) in content
+            if typeof(v) <: String
+                if k == attr.property
+                    return letter, ""
+                end
+            else
+                for (l, u) in v[2]
+                    if l == attr.property
+                        return letter, k
+                    end
+                end
+            end
+        end
+    end
+    return nothing, nothing
+end
+

@@ -1,4 +1,4 @@
-
+include("base.jl")
 
 function analyze(widget::QStack, ctx::PlotContext)
     local dates = Array{DateTime,1}()
@@ -56,3 +56,4 @@ function renderWidget!(widget::QStack, ctx::PlotContext)
 
     return dates, accum
 end
+

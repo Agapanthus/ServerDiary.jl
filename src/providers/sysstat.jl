@@ -1,7 +1,8 @@
 using Dates
-include(joinpath(@__DIR__, "..", "conf.jl"))
-include(joinpath(@__DIR__, "sarDB.jl"))
-include(joinpath(@__DIR__, "util.jl"))
+
+include("sysstatDB.jl")
+include("../util/util.jl")
+include("../../conf.jl")
 
 
 function sarExe(cmd)

@@ -1,13 +1,12 @@
+#!/usr/bin/env julia
+
 # Positive: number of ticks. Negative: Distance in hours between ticks
 const NUMBER_OF_TICKS = -3
 
 using Colors
 # For color preview, look here: https://www.december.com/html/spec/colorsvg.html
 
-# Hide the most extreme outliers, 0=disabled
-# const CUT_N_TIMES_MEAN = 0
-
-include(joinpath(@__DIR__, "src", "queryStructure.jl"))
+include("src/structures.jl")
 
 # if no size is given, this size is used for the plot
 const DEFAULT_SIZE = (1400, 430)
@@ -28,13 +27,13 @@ global QUERY = Array{QWidget,1}([
                 log = true,
                 data = [
                     QStack([
-                        QStyled(Sysstat("wtps"), Dict("color" => :red)),
-                        QStyled(Sysstat("rtps"), Dict("color" => :royalblue))
+                        QStyle(Sysstat("wtps"), Dict("color" => :red)),
+                        QStyle(Sysstat("rtps"), Dict("color" => :royalblue))
                     ]), 
-                    QStyled(Sysstat("tps"), Dict("color" => :navy))
+                    QStyle(Sysstat("tps"), Dict("color" => :navy))
                 ],
             ),
-            QStyled(
+            QStyle(
                 QGroup(
                     "blocks/s",
                     data = [Sysstat("bread/s"), Sysstat("bwrtn/s")]
@@ -54,24 +53,25 @@ global QUERY = Array{QWidget,1}([
                 log = true,
                 data = [
                     QStack([
-                        QStyled(Sysstat("wtps"), Dict("color" => :red)),
-                        QStyled(Sysstat("rtps"), Dict("color" => :royalblue))
+                        QStyle(Sysstat("wtps"), Dict("color" => :red)),
+                        QStyle(Sysstat("rtps"), Dict("color" => :royalblue))
                     ]), 
-                    # QStyled(Sysstat("tps"), Dict("color" => :navy))
+                    # QStyle(Sysstat("tps"), Dict("color" => :navy))
                 ],
             ),
             QGroup(
                 "blocks/s",
                 data = [
-                    QStyled(QStack([
-                        QStyled(Sysstat("bread/s"), Dict("color" => :navy)), 
-                        QStyled(Sysstat("bwrtn/s"), Dict("color" => :maroon))
+                    QStyle(QStack([
+                        QStyle(Sysstat("bread/s"), Dict("color" => :navy)), 
+                        QStyle(Sysstat("bwrtn/s"), Dict("color" => :maroon))
                     ]), Dict("fillalpha" => 0.4))
                 ],
             ),
         ],
     ),
     
+    #=
     QPlot(
         "CPU",
         days = 2,
@@ -90,6 +90,7 @@ global QUERY = Array{QWidget,1}([
             ],
         )],
     ),
+    =#
 
 
 
@@ -134,24 +135,6 @@ global QUERY = Array{QWidget,1}([
     =#
 
 ])
-
-# Any subset of these properties occuring in one plot is stacked+filled
-#global STACKED = [
-#    ["%steal", "%iowait", "%system", "%nice", "%user"],
-#    ["tps", "rtps", "wtps"],
-#]
-
-# Add some special styling to some data columns
-#
-# you can override any defaults using this
-#   fillrange: nothing to prevent filling (for example when stacked) or a float to fill towards this number
-#   color: line color
-#   fillcolor: fill color
-#   fillalpha: fill alpha
-# 
-#global STYLES = Dict{String,Dict{String,Any}}(
-#    "%user" => Dict("fillalpha"=>0.2),
-#)
 
 # Color Theme
 # See https://github.com/JuliaPlots/PlotThemes.jl

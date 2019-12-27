@@ -1,9 +1,12 @@
+module Args
+
+export getArguments
+
 using ArgParse
 
 struct StatsArgsException
     msg::String
 end
-
 
 function error_handler(settings::ArgParseSettings, err, err_code::Int = 1)
     println(stderr, err.text)
@@ -23,8 +26,8 @@ function getArguments()
             #    default = "asd"
 
             "email"
-                help = "the e-mail-address to which the report should be send"
-                required = true
+            help = "the e-mail-address to which the report should be send"
+            required = true
         end
 
         return parse_args(s)
@@ -32,4 +35,6 @@ function getArguments()
         # TODO: Dev only!
         return Dict("email" => "accounting@skaliks.dev")
     end
+end
+
 end

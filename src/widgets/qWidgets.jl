@@ -1,9 +1,7 @@
-include(joinpath(@__DIR__, "..", "conf.jl"))
-include(joinpath(@__DIR__, "plot.jl"))
-include(joinpath(@__DIR__, "queryStructure.jl"))
-include(joinpath(@__DIR__, "stats.jl"))
-include(joinpath(@__DIR__, "util.jl"))
-# TODO: Use modules instead!
+
+
+include("qPlots.jl")
+include("../../conf.jl")
 
 
 
@@ -53,3 +51,5 @@ function renderWidget(widget::QWidget, today::DateTime, saveTo::String) #::Array
     return results
     =#
 end
+
+
