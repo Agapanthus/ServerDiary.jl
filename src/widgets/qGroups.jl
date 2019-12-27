@@ -3,7 +3,7 @@ include("base.jl")
 function analyze(widget::QGroup, ctx::PlotContext)
     local dates = Array{DateTime,1}()
     local values = nothing
-    local srcCtx = Array{String,1}()
+    local srcCtx = Dict{String, DataAttributeContext}()
     local mini = typemax(Float64)
     local maxi = typemin(Float64)
     local titles = Array{String,1}()
@@ -12,13 +12,11 @@ function analyze(widget::QGroup, ctx::PlotContext)
         local _dates, _values, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
 
         @assert length(_dates) == length(_values)
+        for (k,v) in _srcCtx
+            srcCtx[k] = v
+        end   
+        values = _values
         dates = _dates
-        for c in _srcCtx
-            push!(srcCtx, c)
-        end
-        if values === nothing
-            values = _values
-        end
         mini = min(mini, minimum(values), _mini)
         maxi = max(maxi, maximum(values), _maxi)
         titles = [titles..., _titles...]

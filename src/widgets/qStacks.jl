@@ -3,7 +3,7 @@ include("base.jl")
 function analyze(widget::QStack, ctx::PlotContext)
     local dates = Array{DateTime,1}()
     local values = nothing
-    local srcCtx = Array{String,1}()
+    local srcCtx = Dict{String,DataAttributeContext}()
     local mini = typemax(Float64)
     local maxi = typemin(Float64)
     local titles = Array{String,1}()
@@ -19,8 +19,8 @@ function analyze(widget::QStack, ctx::PlotContext)
             @assert length(dates) == length(_dates) "$(length(dates)) == $(length(_dates))"
         end
         dates = _dates
-        for c in _srcCtx
-            push!(srcCtx, c)
+        for (k,v) in _srcCtx
+            srcCtx[k] = v
         end
         if values === nothing
             values = _values

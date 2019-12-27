@@ -17,7 +17,9 @@ function sarExe(cmd)
 end
 
 # calculates the cross product over the text-columns
-function recursiveCross(data, header, startAt = 2)
+function recursiveCross(data, header, startAt = 2)::Array{Tuple{Any, Array{Array{Any,1},1}}}
+    data = convert(Array{Array{Any,1}}, data)
+
     for i in startAt:length(header)
         length(header[i][3]) > 1 || continue
         local classes = Dict{String,Tuple{Int,String,Any}}()
@@ -107,6 +109,8 @@ function getSarDay(command::String, keyword::String, useDate::DateTime)
         x
     end, data)
 
+    @assert length(data) > 0
+
     # The dates are always increasing, but might continue on the next day. So fix this.
     local lastDate = data[1][1]
     for i in 1:length(data)
@@ -137,7 +141,7 @@ function getSarDay(command::String, keyword::String, useDate::DateTime)
     # filter duplicate title rows
     data = filter(x -> x[2:end] != header[2:end], data)
 
-    return description, header, data, myCommands, points
+    return description, header, convert(Array{Array{Any,1},1}, data) , myCommands, points
 end
 
 # extracts sar data for the given command and keyword for the last days
@@ -149,17 +153,22 @@ end
 # - description, what the command did
 function collectData(command::String, keyword::String, days::Int, today::DateTime)
     # Collect sar data for several days
-    local description, header, data, myCommands, points = getSarDay(command, keyword, today)
-    for day in 1:days-1
+    local description, header, myCommands = nothing, nothing, nothing
+    local data = []
+    local points = []
+    for day in 0:days-1
         logException(
             _ -> begin
                 local description2, header2, data2, myCommands2, points2 =
                     getSarDay(command, keyword, today - Dates.Day(day))
-                @assert header[2:end] == header2[2:end] "$header $header2"
-                @assert description == description2
-                @assert myCommands == myCommands2
+                @assert header == nothing || header[2:end] == header2[2:end] "$header $header2"
+                @assert description == nothing || description == description2
+                @assert myCommands == nothing || myCommands == myCommands2
                 data = [data2..., data...]
                 points = [points2..., points...]
+                description = description2
+                header = header2
+                myCommands = myCommands2
             end,
             "getting sar data from $day days before",
         )

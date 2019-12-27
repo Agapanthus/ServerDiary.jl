@@ -6,14 +6,14 @@ mutable struct QPlot <: QWidget
     title::String
     days::Int64
     data::Array{<:QueryStruct,1}
-    size::Union{Tuple{Int64,Int64}, Nothing}
+    size::Union{Tuple{Int64,Int64},Nothing}
 end
 # line plot of the given structure
 QPlot(
     title::String;
     days::Int64 = 3,
     data::Array{<:QueryStruct,1} = [],
-    size::Union{Tuple{Int64,Int64}, Nothing} = nothing,
+    size::Union{Tuple{Int64,Int64},Nothing} = nothing,
 ) = QPlot(title, days, data, size)
 
 mutable struct QStack <: QueryStruct
@@ -55,15 +55,15 @@ QGroup(
 ############ Providers
 
 struct DataAttributeContext
-    ctx::Set{Tuple{String,String}}
+    ctx::Set{Tuple{String,String,String}}
 end
 
 
 struct Sysstat <: DataAttribute
     property::String
-    context::DataAttributeContext
+    #context::DataAttributeContext
 end
-Sysstat(name::String) = Sysstat(name, DataAttributeContext(Set()))
+#Sysstat(name::String) = Sysstat(name, DataAttributeContext(Set()))
 
 struct Aws <: DataAttribute
     property::String
@@ -78,7 +78,7 @@ end
 using Dates
 
 mutable struct DataStore
-    data::Dict{Tuple{String,String},Dict{String,Tuple{Array{DateTime,1},Array{Float64,1}}}}
+    data::Dict{Tuple{String,String},Dict{String,Tuple{DataAttributeContext,Array{DateTime,1},Array{Float64,1}}}}
     points::Dict{Tuple{String,String},Array{DateTime,1}}
     descriptions::Dict{Tuple{String,String},String}
 end
@@ -105,13 +105,11 @@ mutable struct PlotContext
 end
 PlotContext(;
     plot = nothing,
-    palette = nothing,
+    palette = Palette(nothing, 1),
     styles::Dict{String,Any} = defaultStyles(),
     today::DateTime = Dates.now(),
     store::DataStore = DataStore(),
     maxDate::DateTime = Dates.now(),
     minDate::DateTime = Dates.now(),
-    group::Int = 0
+    group::Int = 0,
 ) = PlotContext(plot, palette, styles, today, store, maxDate, minDate, group)
-
-

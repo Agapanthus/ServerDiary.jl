@@ -26,9 +26,9 @@ function writeDiary()
         # TODO: Debug
         #logException(_->begin
             local results = renderWidget(widget, today, joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) )
-            for (pngPath, header, description, specialization) in results
+            for (pngPath, titles, title, description) in results
                 path = pngPath
-                doc = appendGraph(doc, basename(pngPath), header, description, widget.title * specialization)
+                doc = appendGraph(doc, basename(pngPath), titles, string(description), title)
             end
         #end, "gettings sar data for $(widget.title)")
     end

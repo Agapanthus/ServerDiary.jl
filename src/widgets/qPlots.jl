@@ -99,14 +99,9 @@ end
 
 function addPoints!(points::Dict{Tuple{String,String},Array{DateTime,1}}, ctx::PlotContext)
     # plot points
-   
+
     for (label, ps) in points
-        vline!(
-            ctx.plot,
-            ps,
-            label = label[2],
-            color = nextColor!(ctx.palette)
-        )
+        vline!(ctx.plot, ps, label = label[2], color = nextColor!(ctx.palette))
 
         # TODO: Scatter is more beautiful. But where on the yaxis do we place the points?
         # _on_ the xaxis would look nice. But that is not possible (?)
@@ -125,7 +120,7 @@ global globalDataStore = DataStore()
 
 function analyze(widget::QPlot, ctx::PlotContext)
     local dates = Set{DateTime}()
-    local srcCtx = Array{String,1}()
+    local srcCtx = Dict{String,DataAttributeContext}()
     local mini = typemax(Float64)
     local maxi = typemin(Float64)
     local titles = Array{String,1}()
@@ -133,12 +128,12 @@ function analyze(widget::QPlot, ctx::PlotContext)
     for attr in widget.data
         local _dates, _values, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
 
-        @assert length(_dates) == length(_values)
+        @assert length(_dates) == length(_values) "$(length(_dates)) == $(length(_values))"
         for c in _dates
             push!(dates, c)
         end
-        for c in _srcCtx
-            push!(srcCtx, c)
+        for (k, v) in _srcCtx
+            srcCtx[k] = v
         end
         mini = min(mini, minimum(_values), _mini)
         maxi = max(maxi, maximum(_values), _maxi)
@@ -160,73 +155,124 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
     end
     local palette = loadPalette(PLOT_THEME)
 
-    # init the plot
-    local p = plot(
-        left_margin = 5mm,
-        title = widget.title,
-        size = size,
-        legend = :topleft,
-        yformatter = Y_FORMATTER,
+    # Get the DataAttributeContext
+    local dates, values, srcCtx, mini, maxi, titles = analyze(
+        widget,
+        PlotContext(today = today, store = globalDataStore, maxDate = to, minDate = from),
     )
-    local ctx = PlotContext(
-        plot = p,
-        palette = palette,
-        today = today,
-        store = globalDataStore,
-        maxDate = to,
-        minDate = from,
-    )
-    local dates, values, srcCtx, mini, maxi, titles = analyze(widget, ctx)
 
-    if DRAW_NIGHT_BACKGROUND
-        addBackground!(dates, ctx)
-        # vspan overwrites the default format. Restore it.
-        plot!(ctx.plot, yformatter = Y_FORMATTER)
-    end
-
-    for el in widget.data
-        ctx.styles = defaultStyles()
-        renderWidget!(el, ctx)
-    end
-
-    local points = getPoints(globalDataStore, from, to)
-    
-    addPoints!(points, ctx)
-    addTicks!(dates, ctx)
-    plot!(ctx.plot, yformatter = Y_FORMATTER)
-
-    # save to plot
-    mkpath(saveTo)
-    local path = joinpath(saveTo, "$(sanitizeFile(widget.title)).png")
-    savefig(ctx.plot, path)
-
-    # TODO: Add specialization
-    local title = widget.title
-
-    # TODO: Generate Description from Specialization data!
-    local description = ""
-
-    titles = map(titles) do x
-        local str = ""
-        if x in keys(globalDataStore.descriptions)
-            str = globalDataStore.descriptions[x]
+    # aggregate the context
+    local aggregatedCtx = Dict{Tuple{String,String},Array{String,1}}()
+    for (k, v) in srcCtx
+        for w in v.ctx
+            if !((w[1], w[2]) in keys(aggregatedCtx))
+                aggregatedCtx[(w[1], w[2])] = []
+            end
+            push!(aggregatedCtx[(w[1], w[2])], w[3])
         end
-        (x..., str)
     end
 
-
-    @assert isfile("$path") "Error saving the Plot"
-
-    # Apply strong png compression to make e-mail smaller
-    if USE_PNGQUANT
-        exe(`pngquant --quality=60-80 --force --output $path $path`)
+    # multiply the context
+    local dataAttrCtxs = Array{DataAttributeContext,1}()
+    for (k, v) in aggregatedCtx
+        local nDataAttrCtxs = Array{DataAttributeContext,1}()
+        for w in v
+            if length(dataAttrCtxs) == 0
+                push!(nDataAttrCtxs, DataAttributeContext(Set([(k..., w)])))
+            else
+                for c in dataAttrCtxs
+                    local cc = copy(c)
+                    push!(cc.ctx, (k..., w))
+                    push!(nDataAttrCtxs, cc)
+                end
+            end
+        end
+        dataAttrCtxs = nDataAttrCtxs
     end
-    
-    return [
-        (path, titles, title, description),
-    ]
+
+    local results = []
+
+    # Iterate all elements of the product
+    for dataAttrCtx in dataAttrCtxs
+
+        local ctxString = ""
+        local description = ""
+        # Generate Description from Specialization Context!
+        for v in dataAttrCtx.ctx
+            ctxString *= "$(v[1])($(v[2])) = $(v[3]) "
+            local desc = ""
+            if (v[1], v[2]) in keys(globalDataStore.descriptions)
+                desc = globalDataStore.descriptions[(v[1], v[2])]
+            end
+            description *= "<b>$(v[1])($(v[2])) = $(v[3])</b><span><i>$desc</i></span><br>\n"
+        end
+        description = strip(description)
+        ctxString = strip(ctxString)        
+        local title = "$(widget.title) $ctxString"
+
+        logger(title, "Plotting with context", true)
+
+        local ctx = PlotContext(
+            palette = palette,
+            today = today,
+            store = globalDataStore,
+            maxDate = to,
+            minDate = from,
+        )
+
+        # init the plot
+        ctx.plot = plot(
+            left_margin = 5mm,
+            title = title,
+            size = size,
+            legend = :topleft,
+            yformatter = Y_FORMATTER,
+        )
+        ctx.styles["source context"] = dataAttrCtx
+        local dates, values, srcCtx, mini, maxi, titles = analyze(widget, ctx)
+
+        if DRAW_NIGHT_BACKGROUND
+            addBackground!(dates, ctx)
+            # vspan overwrites the default format. Restore it.
+            plot!(ctx.plot, yformatter = Y_FORMATTER)
+        end
+
+        for el in widget.data
+            ctx.styles = defaultStyles()
+            ctx.styles["source context"] = dataAttrCtx
+            renderWidget!(el, ctx)
+        end
+
+        local points = getPoints(globalDataStore, from, to)
+
+        addPoints!(points, ctx)
+        addTicks!(dates, ctx)
+        plot!(ctx.plot, yformatter = Y_FORMATTER)
+
+        # save to plot
+        mkpath(saveTo)
+        local path = joinpath(saveTo, "$(sanitizeFile(title)).png")
+        savefig(ctx.plot, path)
+
+        titles = map(titles) do x
+            local str = ""
+            if x in keys(globalDataStore.descriptions)
+                str = globalDataStore.descriptions[x]
+            end
+            (x..., str)
+        end
+
+        @assert isfile("$path") "Error saving the Plot"
+
+        # Apply strong png compression to make e-mail smaller
+        if USE_PNGQUANT
+            exe(`pngquant --quality=60-80 --force --output $path $path`)
+        end
+
+        push!(results, (path, titles, title, description))
+    end
+
+    return results
 end
 
-
-# renderWidget(QUERY[1], Dates.now(), joinpath(BASE_PATH, "stats"))
 

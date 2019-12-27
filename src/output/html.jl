@@ -16,7 +16,6 @@ function appendGraph(doc::StatsDocument, path::String, titles::Array{Tuple{Strin
         doc.parts["overview"] *= "<img src=\"$path\" title=\"$title\" alt=\"$title\" height=\"$OVERVIEW_HEIGHT\" width=\"$OVERVIEW_WIDTH\">"
     end
     
-
     if title ∉ keys(doc.parts)
         doc.parts[title] = ""
         push!(doc.order, title)

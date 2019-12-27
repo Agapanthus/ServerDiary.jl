@@ -17,35 +17,8 @@ const DRAW_NIGHT_BACKGROUND = true
 # List of all commands and keywords to generate graphs for
 global QUERY = Array{QWidget,1}([
 
+
     #=
-    QPlot(
-        "Demoplot",
-        days = 5,
-        data = [
-            QGroup(
-                "packets/s",
-                log = true,
-                data = [
-                    QStack([
-                        QStyle(Sysstat("wtps"), Dict("color" => :red)),
-                        QStyle(Sysstat("rtps"), Dict("color" => :royalblue))
-                    ]), 
-                    QStyle(Sysstat("tps"), Dict("color" => :navy))
-                ],
-            ),
-            QStyle(
-                QGroup(
-                    "blocks/s",
-                    data = [Sysstat("bread/s"), Sysstat("bwrtn/s")]
-                ),
-                Dict("fillrange" => 0, "fillalpha" => 0.2),
-            ),
-        ],
-    ),
-    =#
-    
-
-
 
     QPlot(
         "I/O",
@@ -77,8 +50,7 @@ global QUERY = Array{QWidget,1}([
     QPlot(
         "CPU",
         days = 3,
-        data = [QGroup(
-            "%",
+        data = [QGroup("%",
             min = 0,
             max = 100,
             data = [
@@ -92,6 +64,28 @@ global QUERY = Array{QWidget,1}([
             ],
         )],
     ),
+
+    =#
+
+    QPlot(
+        "Network",
+        days = 3,
+        data = [
+            QGroup("kB",
+                data= [
+                    QStack([
+                        Sysstat("rxpck/s"),
+                        Sysstat("txpck/s"),
+                    ]),
+                ]),
+            QGroup("%",
+                min = 0,
+                max = 100,
+                data = [
+                    Sysstat("%ifutil"),
+                ]),
+        ]),
+
 
     # TODO: Monthly view
 

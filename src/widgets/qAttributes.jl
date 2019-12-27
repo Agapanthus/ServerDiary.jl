@@ -1,12 +1,16 @@
 include("base.jl")
 include("../providers/data.jl")
 
-function analyze(attr::DataAttribute, ctx::PlotContext)
-    local dates, values, title = fetchData!(ctx.store, attr, ctx.minDate, ctx.maxDate)
-    # TODO: Multiply along text columns!
-    local srcCtx = []
-
-    return dates, values, srcCtx, minimum(values), maximum(values), [title]
+function analyze(attr::DataAttribute, ctx::PlotContext)       
+    local srcCtx = fetchContext!(ctx.store, attr, ctx.minDate, ctx.maxDate)
+    @assert length(srcCtx) > 0
+    for (k,lctx) in srcCtx
+        if "source context" in keys(ctx.styles)
+            lctx = ctx.styles["source context"] 
+        end
+        local dates, values, title = fetchData!(ctx.store, attr, lctx, ctx.minDate, ctx.maxDate)
+        return dates, values, srcCtx, minimum(values), maximum(values), [title]
+    end
 end
 
 import Base.+
@@ -24,9 +28,8 @@ end
 
 function renderWidget!(attr::DataAttribute, ctx::PlotContext)
 
-    local dates, values, srcCtx, _ = analyze(attr, ctx)
-    @assert length(srcCtx) == 0 "Ambiguos attribute."
-
+    local dates, values, _ = fetchData!(ctx.store, attr, ctx.styles["source context"], ctx.minDate, ctx.maxDate)
+        
     local label = attr.property
     if "stacked" in keys(ctx.styles)
         label *= " (stacked)"

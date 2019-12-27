@@ -35,8 +35,7 @@ function logException(f, operation)
     end
 end
 
-
-function pseudoColumn(data::Array{Array{Any,1},1}, n::Int)::Array{Any,1}
+function pseudoColumn(data::Array{<:Any,1}, n::Int)::Array{Any,1}
     local column = []
     for d in data
         push!(column, d[n])
