@@ -2,11 +2,11 @@ include("base.jl")
 include("../providers/data.jl")
 
 function analyze(attr::DataAttribute, ctx::PlotContext)
-    local dates, values = fetchData!(ctx.store, attr, ctx.minDate, ctx.maxDate)
+    local dates, values, title = fetchData!(ctx.store, attr, ctx.minDate, ctx.maxDate)
     # TODO: Multiply along text columns!
     local srcCtx = []
 
-    return dates, values, srcCtx, minimum(values), maximum(values), [attr.property]
+    return dates, values, srcCtx, minimum(values), maximum(values), [title]
 end
 
 import Base.+

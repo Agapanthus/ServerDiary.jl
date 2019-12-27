@@ -14,13 +14,13 @@ function fetchData!(
     attribute::Sysstat,
     from::DateTime,
     to::DateTime,
-)::Tuple{Array{DateTime,1},Array{Float64,1}}
+)::Tuple{Array{DateTime,1},Array{Float64,1}, Tuple{String,String}}
 
     @assert "$(typeof(attribute))" == "Sysstat"
 
     local fqn = ("$(typeof(attribute))", attribute.property)
     if fqn in keys(store.data)
-        return store.data[fqn]["$(attribute.context)"]
+        return store.data[fqn]["$(attribute.context)"]..., fqn
     end
 
     local cmd, keyword = getCommand(attribute)
@@ -35,7 +35,9 @@ function fetchData!(
     end
 
     for h in header[2:end]
-        store.descriptions[("$(typeof(attribute))", h[1])] = h[2]
+        if length(h[2]) > 0
+            store.descriptions[("$(typeof(attribute))", h[1])] = h[2]
+        end
     end
 
     for i in 2:length(header)
@@ -56,8 +58,8 @@ function fetchData!(
     end
 
     fqn = ("$(typeof(attribute))", attribute.property)
-
-    return store.data[fqn]["$(attribute.context)"]
+    
+    return store.data[fqn]["$(attribute.context)"]..., fqn
 end
 
 function getPoints(store::DataStore, from::DateTime, to::DateTime)

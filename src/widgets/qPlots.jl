@@ -199,9 +199,34 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
     mkpath(saveTo)
     local path = joinpath(saveTo, "$(sanitizeFile(widget.title)).png")
     savefig(ctx.plot, path)
-    return path
+
+    # TODO: Add specialization
+    local title = widget.title
+
+    # TODO: Generate Description from Specialization data!
+    local description = ""
+
+    titles = map(titles) do x
+        local str = ""
+        if x in keys(globalDataStore.descriptions)
+            str = globalDataStore.descriptions[x]
+        end
+        (x..., str)
+    end
+
+
+    @assert isfile("$path") "Error saving the Plot"
+
+    # Apply strong png compression to make e-mail smaller
+    if USE_PNGQUANT
+        exe(`pngquant --quality=60-80 --force --output $path $path`)
+    end
+    
+    return [
+        (path, titles, title, description),
+    ]
 end
 
 
-renderWidget(QUERY[1], Dates.now(), joinpath(BASE_PATH, "stats"))
+# renderWidget(QUERY[1], Dates.now(), joinpath(BASE_PATH, "stats"))
 

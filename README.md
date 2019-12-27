@@ -1,5 +1,5 @@
-# server-diary
-generates very detailed e-mails with graphs and statistics on what was happening on you server during the last days
+# ServerDiary
+Generates very detailed e-mails with graphs and statistics on what was happening on you server during the last days
 
 ### WARNING: This is a prototype. Don't run it on your server yet!
 
@@ -12,19 +12,15 @@ sudo add-apt-repository ppa:jonathonf/julialang
 sudo apt-get update
 sudo apt install julia
 ```
+You also need to install pngquant to compress the pngs and send smaller emails: `sudo apt install pngquant`
 
-Optionally, you can also install pngquant to compress the pngs and send smaller emails: `sudo apt install pngquant`
-
-To install and build the dependencies of julia, run `julia install.jl`. If you want to run this package as cronjob, make sure to run the `install.jl` from the same user as the cron job.
+To install this package and its julia dependencies enter your Julia CLI and type `]` to enter the Pkg-manager. Now enter `add https://github.com/Agapanthus/ServerDiary.jl`.
 
 Currently, the only supported backend is `sysstat`. So make sure `sysstat` and `sar` are installed and properly configured.
 
 ## Usage
 
-Run `julia ServerDiary.jl`. It will generate a file `stats.email` which is a multipart-html-email with images. You can send it using `sendmail -i -t < stats.email`.
+Run `julia ServerDiary/run.jl`. It will generate a file `stats.email` which is a multipart-html-email with images. You can send it using `sendmail -i -t < stats.email`.
+The script might take a minute to start because it imports the Plots.jl package.
 
 Old graphs are archived in the `stats` folder. Feel free to delete them if they become too many.
-
-## Notes
-
-To delete Julia's precompiled cache, run `rm -rf ~/.julia/compiled`

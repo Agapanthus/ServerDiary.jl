@@ -18,7 +18,7 @@ function writeDiary()
     logger("", "Writing Diary...", true)
 
     local today = Dates.now()
-    local doc = HTML.StatsDocument()
+    local doc = StatsDocument()
     local args = getArguments()
     local path = ""
 
@@ -26,12 +26,9 @@ function writeDiary()
         # TODO: Debug
         #logException(_->begin
             local results = renderWidget(widget, today, joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) )
-            @show results
-
             for (pngPath, header, description, specialization) in results
-                @show pngPath, header, description
                 path = pngPath
-                doc = HTML.appendGraph(doc, basename(pngPath), header, description, widget.title * specialization)
+                doc = appendGraph(doc, basename(pngPath), header, description, widget.title * specialization)
             end
         #end, "gettings sar data for $(widget.title)")
     end

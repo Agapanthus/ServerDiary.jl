@@ -43,10 +43,13 @@ global QUERY = Array{QWidget,1}([
         ],
     ),
     =#
+    
+
+
 
     QPlot(
         "I/O",
-        days = 4,
+        days = 3,
         data = [
             QGroup(
                 "packets/s",
@@ -71,10 +74,9 @@ global QUERY = Array{QWidget,1}([
         ],
     ),
     
-    #=
     QPlot(
         "CPU",
-        days = 2,
+        days = 3,
         data = [QGroup(
             "%",
             min = 0,
@@ -90,10 +92,6 @@ global QUERY = Array{QWidget,1}([
             ],
         )],
     ),
-    =#
-
-
-
 
     # TODO: Monthly view
 
@@ -147,7 +145,8 @@ const MAKE_OVERVIEW = true
 const OVERVIEW_WIDTH = DEFAULT_SIZE[1] ÷ 3
 const OVERVIEW_HEIGHT = DEFAULT_SIZE[2] ÷ 3
 
-
 # Sysstat Corruption detection
 const SYSSTAT_CORRUPTION_THRESHOLD = 1_000_000_000_000
 const SYSSTAT_CORRUPTION_MARGIN = 4
+
+const USE_PNGQUANT = true

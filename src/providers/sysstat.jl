@@ -171,7 +171,7 @@ function collectData(command::String, keyword::String, days::Int, today::DateTim
         header[i] in keys(myCommands) ||
         logger("", "coudln't find $(header[i]) in $(keys(myCommands))")
         if header[i] ∉ keys(myCommands)
-            myCommands[header[i]] = "unknown"
+            myCommands[header[i]] = ""
         end
 
         if isNumericString(data[1][i])
