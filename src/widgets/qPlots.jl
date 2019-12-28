@@ -153,7 +153,6 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
     if size === nothing
         size = DEFAULT_SIZE
     end
-    local palette = loadPalette(PLOT_THEME)
 
     # Get the DataAttributeContext
     local dates, values, srcCtx, mini, maxi, titles = analyze(
@@ -192,6 +191,10 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
 
     local results = []
 
+    if length(dataAttrCtxs) == 0
+        push!(dataAttrCtxs, DataAttributeContext(Set()))
+    end
+
     # Iterate all elements of the product
     for dataAttrCtx in dataAttrCtxs
 
@@ -213,7 +216,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
         logger(title, "Plotting with context", true)
 
         local ctx = PlotContext(
-            palette = palette,
+            palette = loadPalette(PLOT_THEME),
             today = today,
             store = globalDataStore,
             maxDate = to,
@@ -231,7 +234,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
         ctx.styles["source context"] = dataAttrCtx
         local dates, values, srcCtx, mini, maxi, titles = analyze(widget, ctx)
 
-        if DRAW_NIGHT_BACKGROUND
+        if DRAW_NIGHT_BACKGROUND && Dates.days(to - from) <= 10 
             addBackground!(dates, ctx)
             # vspan overwrites the default format. Restore it.
             plot!(ctx.plot, yformatter = Y_FORMATTER)

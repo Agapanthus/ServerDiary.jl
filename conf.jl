@@ -16,9 +16,26 @@ const DRAW_NIGHT_BACKGROUND = true
 
 # List of all commands and keywords to generate graphs for
 global QUERY = Array{QWidget,1}([
+    
 
-
-    #=
+    QPlot(
+        "CPU Long",
+        days = 30,
+        data = [QGroup("%",
+            min = 0,
+            max = 100,
+            data = [
+                QStack([
+                    Sysstat("%steal"),
+                    Sysstat("%nice"),
+                    Sysstat("%iowait"),
+                    Sysstat("%system"),
+                    Sysstat("%user"),
+                ]),
+                QStyle(Sysstat("%memused"), Dict("color"=>:red))
+            ],
+        )],
+    ),
 
     QPlot(
         "I/O",
@@ -46,6 +63,26 @@ global QUERY = Array{QWidget,1}([
             ),
         ],
     ),
+
+
+    QPlot(
+        "CPU Long",
+        days = 30,
+        data = [QGroup("%",
+            min = 0,
+            max = 100,
+            data = [
+                QStack([
+                    Sysstat("%steal"),
+                    Sysstat("%nice"),
+                    Sysstat("%iowait"),
+                    Sysstat("%system"),
+                    Sysstat("%user"),
+                ]),
+                QStyle(Sysstat("%memused"), Dict("color"=>:red))
+            ],
+        )],
+    ),
     
     QPlot(
         "CPU",
@@ -61,21 +98,23 @@ global QUERY = Array{QWidget,1}([
                     Sysstat("%system"),
                     Sysstat("%user"),
                 ]),
+                QStyle(Sysstat("%memused"), Dict("color"=>:red))
             ],
         )],
     ),
 
-    =#
 
     QPlot(
         "Network",
         days = 3,
         data = [
             QGroup("kB",
-                data= [
+                log = true,
+                min = 1,
+                data = [
                     QStack([
-                        Sysstat("rxpck/s"),
                         Sysstat("txpck/s"),
+                        Sysstat("rxpck/s"),
                     ]),
                 ]),
             QGroup("%",
@@ -86,45 +125,143 @@ global QUERY = Array{QWidget,1}([
                 ]),
         ]),
 
+    QPlot(
+        "RAM",
+        days = 3,
+        data = [
+            QGroup("kB",
+                data = [
+                    Sysstat("kbdirty"),
+                    QStack([
+                        Sysstat("kbswpused"),
+                        Sysstat("kbinact"),
+                        Sysstat("kbactive"),
+                        QStyle(Sysstat("kbavail"), Dict("color"=>:lightblue, "fillrange"=>nothing)),
+                    ]),
+                ]),
+            QGroup("%",
+                min = 0,
+                data = [
+                    #QStyle(Sysstat("%memused"), Dict("color"=>:darkmagenta)),
+                    QStyle(Sysstat("%commit"), Dict("color"=>:red))
+                ]),
+        ]),
+
+    QPlot(
+        "Handles",
+        days = 3,
+        data = [
+            QGroup("Number",
+                min = 0,
+                data = [
+                    QStack([
+                        QStyle(Sysstat("pty-nr"), Dict("color"=>:darkmagenta, "fillalpha"=>0.1))
+                    ])
+                ]),
+            QGroup("Number",
+                min = 0,
+                data = [
+                    QStack([
+                        Sysstat("file-nr"),
+                        Sysstat("inode-nr"),
+                    ]),
+                    Sysstat("dentunusd"),
+                ]),
+        ]),
+
+
+    QPlot(
+        "Task Creation & Context Switches",
+        days = 3,
+        data = [
+            QGroup("Number / s",
+                min = 0,
+                data = [
+                    QStack([
+                        Sysstat("cswch/s")
+                    ])
+                ]),
+            QGroup("Number / s",
+                min = 0,
+                data = [
+                    QStack([
+                        Sysstat("proc/s"),
+                    ])
+                ]),
+        ]),
+
+
+    QPlot(
+        "Network failures",
+        days = 3,
+        data = [
+            QGroup("Number / s",
+                min = 0,
+                data = [
+                    QStack([
+                        Sysstat("coll/s"),
+                        Sysstat("rxerr/s"),
+                        Sysstat("txerr/s"),
+                        Sysstat("rxdrop/s"),
+                        Sysstat("txdrop/s"),
+                        Sysstat("txcarr/s"),
+                        Sysstat("rxfram/s"),
+                        Sysstat("rxfifo/s"),
+                        Sysstat("txfifo/s"),
+                    ]),
+                ]),
+        ]),
+
+    QPlot(
+        "Sockets",
+        days = 3,
+        data = [
+            QGroup("Number",
+                min = 0,
+                data = [
+                    Sysstat("totsck"),
+                    QStack([
+                        Sysstat("tcpsck"),
+                        Sysstat("udpsck"),
+                        Sysstat("rawsck"),
+                    ]),
+                    Sysstat("tcp-tw"),
+                ]),
+            QGroup("Number",
+                min = 0,
+                data = [
+                    QStack([
+                        Sysstat("ip-frag"),
+                    ])
+                ]),
+        ]), 
+
+    QPlot(
+        "Disk I/O",
+        days = 3,
+        data = [
+            QGroup("kB",
+                log = true,
+                data = [
+                    QStack([
+                        Sysstat("wkB/s"),
+                        Sysstat("rkB/s"),
+                    ]),
+                ]),
+            QGroup("%",
+                min = 0,
+                max = 100,
+                data = [
+                    QStack([
+                        Sysstat("%util"),
+                    ])
+                ]),
+        ]),
+    
+    
+  
 
     # TODO: Monthly view
-
-
-    #["CPU", "u", ""],
-
-    #["I/O", "b", ""],
-
-    #=
-    ["Network Devices", "n", "DEV"],   
-                                                
-
-    ["", "F", ""], 
-    ["RAM", "r", ""], 
-    ["Swap", "S", ""], 
-
-    ["", "v", ""], 
-    ["", "w", ""], 
-    ["", "y", ""],
-                                             
-    ["", "q", ""], 
-                                             
-    ["", "n", "EDEV"], 
-    ["", "n", "IP"], 
-    ["", "n", "EIP"], 
-    ["", "n", "IP6"], 
-    ["", "n", "SOCK"], 
-    ["", "n", "TCP"], 
-    ["", "n", "UDP"],
-                                             
-    ["", "d", ""], 
-    ["", "B", ""], 
-    ["", "H", ""], 
-                                             
-    ["CPU", "m", "CPU"], 
-    ["Fan", "m", "FAN"], 
-    ["Temperature", "m", "TEMP"], 
-    ["Frequency", "m", "FREQ"]
-    =#
 
 ])
 

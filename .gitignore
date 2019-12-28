@@ -28,3 +28,4 @@ Manifest.toml
 stats
 *.log
 *.email
+hidden.json

@@ -758,6 +758,7 @@ function getCommand(attr::Sysstat)
             end
         end
     end
+    logger(attr, "Couldn't find command", true)
     return nothing, nothing
 end
 

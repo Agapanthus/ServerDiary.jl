@@ -25,4 +25,9 @@ end
 
 
 using Formatting
-global Y_FORMATTER = yi -> replace(format(yi, commas = true), "," => " ")
+global Y_FORMATTER = yi -> begin
+    if yi > 100
+        yi = round(yi)
+    end
+    replace(format(round(yi, digits=3), commas = true), "," => " ")
+end

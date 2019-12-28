@@ -16,6 +16,12 @@ You also need to install pngquant to compress the pngs and send smaller emails: 
 
 To install this package and its julia dependencies enter your Julia CLI and type `]` to enter the Pkg-manager. Now enter `add https://github.com/Agapanthus/ServerDiary.jl`.
 
+If you prefer to download manually, cd the package in Pkg and enter
+```
+activate .
+update
+```
+
 Currently, the only supported backend is `sysstat`. So make sure `sysstat` and `sar` are installed and properly configured.
 
 ## Usage
