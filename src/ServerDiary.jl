@@ -1,6 +1,7 @@
+__precompile__()
+module ServerDiary
+export writeDiary
 
-# make modules in ./src visible to module importer
-# push!(LOAD_PATH, @__DIR__)
 
 include("util/util.jl")
 include("util/Args.jl")
@@ -23,14 +24,13 @@ function writeDiary()
     local path = ""
 
     for widget in QUERY
-        # TODO: Debug
-        #logException(_->begin
+        logException(_->begin
             local results = renderWidget(widget, today, joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) )
             for (pngPath, titles, title, description) in results
                 path = pngPath
                 doc = appendGraph(doc, basename(pngPath), titles, string(description), title)
             end
-        #end, "gettings sar data for $(widget.title)")
+        end, "gettings sar data for $(widget.title)")
     end
     
     local html = generateHTML(doc)
@@ -42,4 +42,6 @@ function writeDiary()
     open( joinpath(BASE_PATH, "stats.email"), "w") do io
         print(io, makeEmail(html, imgPath, args["email"], "Daily Report"))
     end
+end
+
 end

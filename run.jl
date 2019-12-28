@@ -1,3 +1,4 @@
 include("src/ServerDiary.jl")
+using .ServerDiary
 
-writeDiary()
+ServerDiary.writeDiary()

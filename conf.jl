@@ -16,26 +16,6 @@ const DRAW_NIGHT_BACKGROUND = true
 
 # List of all commands and keywords to generate graphs for
 global QUERY = Array{QWidget,1}([
-    
-
-    QPlot(
-        "CPU Long",
-        days = 30,
-        data = [QGroup("%",
-            min = 0,
-            max = 100,
-            data = [
-                QStack([
-                    Sysstat("%steal"),
-                    Sysstat("%nice"),
-                    Sysstat("%iowait"),
-                    Sysstat("%system"),
-                    Sysstat("%user"),
-                ]),
-                QStyle(Sysstat("%memused"), Dict("color"=>:red))
-            ],
-        )],
-    ),
 
     QPlot(
         "I/O",
@@ -133,7 +113,7 @@ global QUERY = Array{QWidget,1}([
                 data = [
                     Sysstat("kbdirty"),
                     QStack([
-                        Sysstat("kbswpused"),
+                        #Sysstat("kbswpused"), # TODO: I want this!
                         Sysstat("kbinact"),
                         Sysstat("kbactive"),
                         QStyle(Sysstat("kbavail"), Dict("color"=>:lightblue, "fillrange"=>nothing)),
@@ -153,9 +133,10 @@ global QUERY = Array{QWidget,1}([
         data = [
             QGroup("Number",
                 min = 0,
+                max = 50,
                 data = [
                     QStack([
-                        QStyle(Sysstat("pty-nr"), Dict("color"=>:darkmagenta, "fillalpha"=>0.1))
+                        QStyle(Sysstat("pty-nr"), Dict("color"=>:darkmagenta, "fillalpha"=>0.3))
                     ])
                 ]),
             QGroup("Number",
@@ -259,7 +240,49 @@ global QUERY = Array{QWidget,1}([
         ]),
     
     
-  
+    QPlot(
+        "AWS UsageQuantity",
+        days = 30,
+        data = [QGroup("X",
+            min = 0,
+            data = [
+                QStack([
+                    Aws("UsageQuantity AWS Lambda"),
+                    Aws("UsageQuantity AWS Key Management Service"),
+                    Aws("UsageQuantity AWS Cost Explorer"),
+                    Aws("UsageQuantity AWS Budgets"),
+                    Aws("UsageQuantity Tax"),
+                    Aws("UsageQuantity AmazonCloudWatch"),
+                    Aws("UsageQuantity Amazon Simple Storage Service"),
+                    Aws("UsageQuantity Amazon Simple Notification Service"),
+                    Aws("UsageQuantity Amazon DynamoDB"),
+                ]),
+            ],
+        )],
+    ),
+    
+    QPlot(
+        "AWS BlendedCost",
+        days = 30,
+        data = [QGroup("X",
+            min = 0,
+            max = 0.2, # TODO: "minmax" - scale it down if there isn't much so if the value increases it stands out immediately!
+            data = [
+                QStack([
+                    Aws("BlendedCost AWS Lambda"),
+                    Aws("BlendedCost AWS Key Management Service"),
+                    Aws("BlendedCost AWS Cost Explorer"),
+                    Aws("BlendedCost AWS Budgets"),
+                    Aws("BlendedCost Tax"),
+                    Aws("BlendedCost AmazonCloudWatch"),
+                    Aws("BlendedCost Amazon Simple Storage Service"),
+                    Aws("BlendedCost Amazon Simple Notification Service"),
+                    Aws("BlendedCost Amazon DynamoDB"),
+                ]),
+            ],
+        )],
+    ),
+    
 
     # TODO: Monthly view
 
