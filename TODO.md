@@ -32,6 +32,8 @@
   * IP Tables
   * Pflogsum / Postfix
   * Apache2 Access / Redis / mysql log
+  * Mail
+    * Define a simple macro to extract stats from emails
 * Improve srcCtx-concept
   * Multiplying graphs is good, but we also want to
     * stack lines of different resolution

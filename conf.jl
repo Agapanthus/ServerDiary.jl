@@ -44,6 +44,7 @@ global QUERY = Array{QWidget,1}([
         ],
     ),
 
+    #=
 
     QPlot(
         "CPU Long",
@@ -283,8 +284,7 @@ global QUERY = Array{QWidget,1}([
         )],
     ),
     
-
-    # TODO: Monthly view
+    =#
 
 ])
 

@@ -1,15 +1,28 @@
 include("base.jl")
 include("../providers/data.jl")
 
-function analyze(attr::DataAttribute, ctx::PlotContext)       
-    local srcCtx = fetchContext!(ctx.store, attr, ctx.minDate, ctx.maxDate)
-    @assert length(srcCtx) > 0
+function analyze(attr::DataAttribute, ctx::PlotContext)    
+    local srcCtx
+    if "source context" in keys(ctx.styles)
+        if typeof(ctx.styles["source context"]) <: Array
+            srcCtx = Dict("$x"=>x for x in ctx.styles["source context"])
+        else
+            @assert typeof(ctx.styles["source context"]) <: DataAttributeContext
+            srcCtx = Dict("$(ctx.styles["source context"])"=>ctx.styles["source context"])
+        end
+    else
+        srcCtx = fetchContext!(ctx.store, attr, ctx.minDate, ctx.maxDate)
+    end
+    
+    @assert length(srcCtx) > 0 && typeof(srcCtx) <: Dict{String, DataAttributeContext}
     for (k,lctx) in srcCtx
         if "source context" in keys(ctx.styles)
             lctx = ctx.styles["source context"] 
         end
         local dates, values, title = fetchData!(ctx.store, attr, lctx, ctx.minDate, ctx.maxDate)
-        return dates, values, srcCtx, minimum(values), maximum(values), [title]
+        
+        # TODO: mini und max
+        return dates, srcCtx, minimum(values), maximum(values), [title]
     end
 end
 

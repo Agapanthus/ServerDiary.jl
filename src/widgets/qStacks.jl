@@ -2,19 +2,14 @@ include("base.jl")
 
 function analyze(widget::QStack, ctx::PlotContext)
     local dates = Array{DateTime,1}()
-    local values = nothing
     local srcCtx = Dict{String,DataAttributeContext}()
     local mini = typemax(Float64)
     local maxi = typemin(Float64)
     local titles = Array{String,1}()
 
     for attr in widget.stacked
-        local _dates, _values, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
+        local _dates, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
 
-        # TODO: What about stacking lines with different resolution?
-        # One would have to interpolate values and sort the dates...
-
-        @assert length(_dates) == length(_values)
         if length(dates) > 0
             @assert length(dates) == length(_dates) "$(length(dates)) == $(length(_dates))"
         end
@@ -22,19 +17,13 @@ function analyze(widget::QStack, ctx::PlotContext)
         for (k,v) in _srcCtx
             srcCtx[k] = v
         end
-        if values === nothing
-            values = _values
-        else
-            @assert length(values) == length(_values)
-            values += _values
-        end
-        mini = min(mini, minimum(values), minimum(_values), _mini)
-        maxi = max(maxi, maximum(values), maximum(_values), _maxi)
+        mini = min(mini, _mini)
+        maxi = Inf # We can't calculate the maximum. Inf is "automatic" in plot.jl ylims
 
         titles = [titles..., _titles...]
     end
 
-    return dates, values, srcCtx, mini, maxi, titles
+    return dates, srcCtx, mini, maxi, titles
 end
 
 function renderWidget!(widget::QStack, ctx::PlotContext)
@@ -44,6 +33,9 @@ function renderWidget!(widget::QStack, ctx::PlotContext)
     local dates = nothing
     local values = nothing
     local accum = 0.0
+    
+    # TODO: What about stacking lines with different resolution?
+    # One would have to interpolate values and sort the dates...
     
     for attr in widget.stacked
         ctx.styles = deepcopy(myStyle)

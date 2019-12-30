@@ -1,31 +1,15 @@
 include("base.jl")
+using Dates
 
-function analyze(widget::QGroup, ctx::PlotContext)
-    local dates = Array{DateTime,1}()
-    local srcCtx = Dict{String, DataAttributeContext}()
-    local mini = typemax(Float64)
-    local maxi = typemin(Float64)
-    local titles = Array{String,1}()
-
-    for attr in widget.data
-        local _dates, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
-
-        for (k,v) in _srcCtx
-            srcCtx[k] = v
-        end   
-        dates = _dates
-        mini = min(mini, _mini)
-        maxi = max(maxi, _maxi)
-        titles = [titles..., _titles...]
-    end
+function analyze(widget::QContext, ctx::PlotContext)
+    local dates, srcCtx, mini, maxi, titles = analyze(widget.data, ctx)
 
     return dates, srcCtx, mini, maxi, titles
 end
 
-function renderWidget!(widget::QGroup, ctx::PlotContext)
+function renderWidget!(widget::QContext, ctx::PlotContext)
     # Check if this group is a specialication
-    local dates, _, mini, maxi, _ = analyze(widget, ctx)
-    local values = nothing
+    local dates, values, srcCtx, mini, maxi, titles = analyze(widget, ctx)
 
     local oPlot = ctx.plot
     local myStyle = ctx.styles
@@ -64,7 +48,7 @@ function renderWidget!(widget::QGroup, ctx::PlotContext)
     for w in widget.data
         ctx.styles = deepcopy(myStyle)
         ctx.styles["ylims"] = (yMin, yMax)
-        _, values = renderWidget!(w, ctx)
+        renderWidget!(w, ctx)
     end
 
     ctx.plot = oPlot

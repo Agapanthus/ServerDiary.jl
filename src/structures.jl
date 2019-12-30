@@ -2,6 +2,42 @@ abstract type QueryStruct end
 abstract type QWidget end
 abstract type DataAttribute <: QueryStruct end
 
+
+############ Providers
+
+struct DataAttributeContext
+    ctx::Set{Tuple{String,String,String}}
+end
+
+
+struct Sysstat <: DataAttribute
+    property::String
+    #context::DataAttributeContext
+end
+#Sysstat(name::String) = Sysstat(name, DataAttributeContext(Set()))
+
+struct Aws <: DataAttribute
+    property::String
+end
+
+struct Postfix <: DataAttribute
+    property::String
+end
+
+##############
+
+using Dates
+
+mutable struct DataStore
+    data::Dict{Tuple{String,String},Dict{String,Tuple{DataAttributeContext,Array{DateTime,1},Array{Float64,1}}}}
+    points::Dict{Tuple{String,String},Array{DateTime,1}}
+    descriptions::Dict{Tuple{String,String},String}
+end
+DataStore() = DataStore(Dict(), Dict(), Dict())
+
+
+############### widgets
+
 mutable struct QPlot <: QWidget
     title::String
     days::Int64
@@ -51,39 +87,11 @@ QGroup(
     data::Array{<:QueryStruct,1} = [],
 ) = QGroup(unit, max, min, log, data)
 
-
-############ Providers
-
-struct DataAttributeContext
-    ctx::Set{Tuple{String,String,String}}
+mutable struct QContext <: QueryStruct
+    ctxs::Union{Array{DataAttributeContext, 1}, Nothing}
+    data::QueryStruct
 end
-
-
-struct Sysstat <: DataAttribute
-    property::String
-    #context::DataAttributeContext
-end
-#Sysstat(name::String) = Sysstat(name, DataAttributeContext(Set()))
-
-struct Aws <: DataAttribute
-    property::String
-end
-
-struct Postfix <: DataAttribute
-    property::String
-end
-
-##############
-
-using Dates
-
-mutable struct DataStore
-    data::Dict{Tuple{String,String},Dict{String,Tuple{DataAttributeContext,Array{DateTime,1},Array{Float64,1}}}}
-    points::Dict{Tuple{String,String},Array{DateTime,1}}
-    descriptions::Dict{Tuple{String,String},String}
-end
-DataStore() = DataStore(Dict(), Dict(), Dict())
-
+QContext(data) = QContext(nothing, data)
 
 ###########
 

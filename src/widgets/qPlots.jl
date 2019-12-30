@@ -11,6 +11,7 @@ include("qGroups.jl")
 include("qStacks.jl")
 include("qStyles.jl")
 include("qAttributes.jl")
+include("qContexts.jl")
 
 include("../providers/data.jl")
 
@@ -126,21 +127,20 @@ function analyze(widget::QPlot, ctx::PlotContext)
     local titles = Array{String,1}()
 
     for attr in widget.data
-        local _dates, _values, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
+        local _dates, _srcCtx, _mini, _maxi, _titles = analyze(attr, ctx)
 
-        @assert length(_dates) == length(_values) "$(length(_dates)) == $(length(_values))"
         for c in _dates
             push!(dates, c)
         end
         for (k, v) in _srcCtx
             srcCtx[k] = v
         end
-        mini = min(mini, minimum(_values), _mini)
-        maxi = max(maxi, maximum(_values), _maxi)
+        mini = min(mini, _mini)
+        maxi = max(maxi, _maxi)
         titles = [titles..., _titles...]
     end
 
-    return sort(collect(dates)), nothing, srcCtx, mini, maxi, titles
+    return sort(collect(dates)), srcCtx, mini, maxi, titles
 end
 
 function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
@@ -155,7 +155,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
     end
 
     # Get the DataAttributeContext
-    local dates, values, srcCtx, mini, maxi, titles = analyze(
+    local _, srcCtx, _, __, titles = analyze(
         widget,
         PlotContext(today = today, store = globalDataStore, maxDate = to, minDate = from),
     )
@@ -232,7 +232,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
             yformatter = Y_FORMATTER,
         )
         ctx.styles["source context"] = dataAttrCtx
-        local dates, values, srcCtx, mini, maxi, titles = analyze(widget, ctx)
+        local dates, _, _, _, titles = analyze(widget, ctx)
 
         if DRAW_NIGHT_BACKGROUND && Dates.days(to - from) <= 10 
             addBackground!(dates, ctx)

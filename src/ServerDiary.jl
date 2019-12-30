@@ -24,13 +24,14 @@ function writeDiary()
     local path = ""
 
     for widget in QUERY
-        logException(_->begin
+        # TODO: Debug
+        #logException(_->begin
             local results = renderWidget(widget, today, joinpath(BASE_PATH, "stats", Dates.format(Dates.now(), "yyyy-mm-dd")) )
             for (pngPath, titles, title, description) in results
                 path = pngPath
                 doc = appendGraph(doc, basename(pngPath), titles, string(description), title)
             end
-        end, "gettings sar data for $(widget.title)")
+        #end, "gettings sar data for $(widget.title)")
     end
     
     local html = generateHTML(doc)
