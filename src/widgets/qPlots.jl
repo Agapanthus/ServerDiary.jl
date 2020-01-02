@@ -11,7 +11,6 @@ include("qGroups.jl")
 include("qStacks.jl")
 include("qStyles.jl")
 include("qAttributes.jl")
-include("qContexts.jl")
 
 include("../providers/data.jl")
 
@@ -197,7 +196,6 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
 
     # Iterate all elements of the product
     for dataAttrCtx in dataAttrCtxs
-
         local ctxString = ""
         local description = ""
         # Generate Description from Specialization Context!
@@ -210,7 +208,7 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
             description *= "<b>$(v[1])($(v[2])) = $(v[3])</b><span><i>$desc</i></span><br>\n"
         end
         description = strip(description)
-        ctxString = strip(ctxString)        
+        ctxString = strip(ctxString)
         local title = "$(widget.title) $ctxString"
 
         logger(title, "Plotting with context", true)
@@ -231,10 +229,11 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
             legend = :topleft,
             yformatter = Y_FORMATTER,
         )
+
         ctx.styles["source context"] = dataAttrCtx
         local dates, _, _, _, titles = analyze(widget, ctx)
 
-        if DRAW_NIGHT_BACKGROUND && Dates.days(to - from) <= 10 
+        if DRAW_NIGHT_BACKGROUND && Dates.days(to - from) <= 10
             addBackground!(dates, ctx)
             # vspan overwrites the default format. Restore it.
             plot!(ctx.plot, yformatter = Y_FORMATTER)
@@ -277,5 +276,3 @@ function renderWidget(widget::QPlot, today::DateTime, saveTo::String)
 
     return results
 end
-
-

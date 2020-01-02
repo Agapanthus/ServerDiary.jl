@@ -18,6 +18,20 @@ const DRAW_NIGHT_BACKGROUND = true
 global QUERY = Array{QWidget,1}([
 
     QPlot(
+        "Network",
+        days = 3,
+        data = [
+            QGroup(
+                "kB",
+                log = true,
+                min = 1,
+                data = [QStack([Sysstat("txpck/s"), Sysstat("rxpck/s")], ctxs = [])],
+            ),
+            QGroup("%", min = 0, max = 100, ctxs = [], data = [Sysstat("%ifutil")]),
+        ],
+    ),
+
+    QPlot(
         "I/O",
         days = 3,
         data = [
@@ -27,29 +41,29 @@ global QUERY = Array{QWidget,1}([
                 data = [
                     QStack([
                         QStyle(Sysstat("wtps"), Dict("color" => :red)),
-                        QStyle(Sysstat("rtps"), Dict("color" => :royalblue))
-                    ]), 
+                        QStyle(Sysstat("rtps"), Dict("color" => :royalblue)),
+                    ]),
                     # QStyle(Sysstat("tps"), Dict("color" => :navy))
                 ],
             ),
             QGroup(
                 "blocks/s",
-                data = [
-                    QStyle(QStack([
-                        QStyle(Sysstat("bread/s"), Dict("color" => :navy)), 
-                        QStyle(Sysstat("bwrtn/s"), Dict("color" => :maroon))
-                    ]), Dict("fillalpha" => 0.4))
-                ],
+                data = [QStyle(
+                    QStack([
+                        QStyle(Sysstat("bread/s"), Dict("color" => :navy)),
+                        QStyle(Sysstat("bwrtn/s"), Dict("color" => :maroon)),
+                    ]),
+                    Dict("fillalpha" => 0.4),
+                )],
             ),
         ],
     ),
 
-    #=
-
     QPlot(
         "CPU Long",
         days = 30,
-        data = [QGroup("%",
+        data = [QGroup(
+            "%",
             min = 0,
             max = 100,
             data = [
@@ -60,15 +74,16 @@ global QUERY = Array{QWidget,1}([
                     Sysstat("%system"),
                     Sysstat("%user"),
                 ]),
-                QStyle(Sysstat("%memused"), Dict("color"=>:red))
+                QStyle(Sysstat("%memused"), Dict("color" => :red)),
             ],
         )],
     ),
-    
+
     QPlot(
         "CPU",
         days = 3,
-        data = [QGroup("%",
+        data = [QGroup(
+            "%",
             min = 0,
             max = 100,
             data = [
@@ -79,106 +94,83 @@ global QUERY = Array{QWidget,1}([
                     Sysstat("%system"),
                     Sysstat("%user"),
                 ]),
-                QStyle(Sysstat("%memused"), Dict("color"=>:red))
+                QStyle(Sysstat("%memused"), Dict("color" => :red)),
             ],
         )],
     ),
-
-
-    QPlot(
-        "Network",
-        days = 3,
-        data = [
-            QGroup("kB",
-                log = true,
-                min = 1,
-                data = [
-                    QStack([
-                        Sysstat("txpck/s"),
-                        Sysstat("rxpck/s"),
-                    ]),
-                ]),
-            QGroup("%",
-                min = 0,
-                max = 100,
-                data = [
-                    Sysstat("%ifutil"),
-                ]),
-        ]),
 
     QPlot(
         "RAM",
         days = 3,
         data = [
-            QGroup("kB",
+            QGroup(
+                "kB",
                 data = [
                     Sysstat("kbdirty"),
                     QStack([
                         #Sysstat("kbswpused"), # TODO: I want this!
                         Sysstat("kbinact"),
                         Sysstat("kbactive"),
-                        QStyle(Sysstat("kbavail"), Dict("color"=>:lightblue, "fillrange"=>nothing)),
+                        QStyle(
+                            Sysstat("kbavail"),
+                            Dict("color" => :lightblue, "fillrange" => nothing),
+                        ),
                     ]),
-                ]),
-            QGroup("%",
+                ],
+            ),
+            QGroup(
+                "%",
                 min = 0,
                 data = [
-                    #QStyle(Sysstat("%memused"), Dict("color"=>:darkmagenta)),
-                    QStyle(Sysstat("%commit"), Dict("color"=>:red))
-                ]),
-        ]),
+                #QStyle(Sysstat("%memused"), Dict("color"=>:darkmagenta)),
+                QStyle(Sysstat("%commit"), Dict("color" => :red))],
+            ),
+        ],
+    ),
 
     QPlot(
         "Handles",
         days = 3,
         data = [
-            QGroup("Number",
+            QGroup(
+                "Number",
                 min = 0,
                 max = 50,
-                data = [
-                    QStack([
-                        QStyle(Sysstat("pty-nr"), Dict("color"=>:darkmagenta, "fillalpha"=>0.3))
-                    ])
-                ]),
-            QGroup("Number",
+                data = [QStack([QStyle(
+                    Sysstat("pty-nr"),
+                    Dict("color" => :darkmagenta, "fillalpha" => 0.3),
+                )])],
+            ),
+            QGroup(
+                "Number",
                 min = 0,
                 data = [
-                    QStack([
-                        Sysstat("file-nr"),
-                        Sysstat("inode-nr"),
-                    ]),
+                    QStack([Sysstat("file-nr"), Sysstat("inode-nr")]),
                     Sysstat("dentunusd"),
-                ]),
-        ]),
+                ],
+            ),
+        ],
+    ),
 
 
     QPlot(
         "Task Creation & Context Switches",
         days = 3,
         data = [
-            QGroup("Number / s",
-                min = 0,
-                data = [
-                    QStack([
-                        Sysstat("cswch/s")
-                    ])
-                ]),
-            QGroup("Number / s",
-                min = 0,
-                data = [
-                    QStack([
-                        Sysstat("proc/s"),
-                    ])
-                ]),
-        ]),
+            QGroup("Number / s", min = 0, data = [QStack([Sysstat("cswch/s")])]),
+            QGroup("Number / s", min = 0, data = [QStack([Sysstat("proc/s")])]),
+        ],
+    ),
 
 
     QPlot(
         "Network failures",
         days = 3,
         data = [
-            QGroup("Number / s",
+            QGroup(
+                "Number / s",
                 min = 0,
+                ctxs = [],
                 data = [
                     QStack([
                         Sysstat("coll/s"),
@@ -191,56 +183,42 @@ global QUERY = Array{QWidget,1}([
                         Sysstat("rxfifo/s"),
                         Sysstat("txfifo/s"),
                     ]),
-                ]),
-        ]),
+                ],
+            ),
+        ],
+    ),
 
     QPlot(
         "Sockets",
         days = 3,
         data = [
-            QGroup("Number",
+            QGroup(
+                "Number",
                 min = 0,
                 data = [
                     Sysstat("totsck"),
-                    QStack([
-                        Sysstat("tcpsck"),
-                        Sysstat("udpsck"),
-                        Sysstat("rawsck"),
-                    ]),
+                    QStack([Sysstat("tcpsck"), Sysstat("udpsck"), Sysstat("rawsck")]),
                     Sysstat("tcp-tw"),
-                ]),
-            QGroup("Number",
-                min = 0,
-                data = [
-                    QStack([
-                        Sysstat("ip-frag"),
-                    ])
-                ]),
-        ]), 
+                ],
+            ),
+            QGroup("Number", min = 0, data = [QStack([Sysstat("ip-frag")])]),
+        ],
+    ),
 
     QPlot(
         "Disk I/O",
         days = 3,
         data = [
-            QGroup("kB",
+            QGroup(
+                "kB",
                 log = true,
-                data = [
-                    QStack([
-                        Sysstat("wkB/s"),
-                        Sysstat("rkB/s"),
-                    ]),
-                ]),
-            QGroup("%",
-                min = 0,
-                max = 100,
-                data = [
-                    QStack([
-                        Sysstat("%util"),
-                    ])
-                ]),
-        ]),
-    
-    
+                data = [QStack([Sysstat("wkB/s"), Sysstat("rkB/s")], ctxs = [])],
+            ),
+            QGroup("%", min = 0, max = 100, ctxs = [], data = [QStack([Sysstat("%util")])]),
+        ],
+    ),
+
+    #=
     QPlot(
         "AWS UsageQuantity",
         days = 30,
@@ -261,7 +239,7 @@ global QUERY = Array{QWidget,1}([
             ],
         )],
     ),
-    
+        
     QPlot(
         "AWS BlendedCost",
         days = 30,
@@ -283,9 +261,8 @@ global QUERY = Array{QWidget,1}([
             ],
         )],
     ),
-    
+        
     =#
-
 ])
 
 # Color Theme

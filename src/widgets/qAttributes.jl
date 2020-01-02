@@ -2,7 +2,8 @@ include("base.jl")
 include("../providers/data.jl")
 
 function analyze(attr::DataAttribute, ctx::PlotContext)    
-    local srcCtx
+    # TODO: We really should pass the context here to get dates and titles specific to this context, but analyze can't handle contexts that good so we can't do that. But we definetly need to implement that!
+    #=local srcCtx
     if "source context" in keys(ctx.styles)
         if typeof(ctx.styles["source context"]) <: Array
             srcCtx = Dict("$x"=>x for x in ctx.styles["source context"])
@@ -12,13 +13,12 @@ function analyze(attr::DataAttribute, ctx::PlotContext)
         end
     else
         srcCtx = fetchContext!(ctx.store, attr, ctx.minDate, ctx.maxDate)
-    end
+    end=#
+
+    local srcCtx = fetchContext!(ctx.store, attr, ctx.minDate, ctx.maxDate)
     
     @assert length(srcCtx) > 0 && typeof(srcCtx) <: Dict{String, DataAttributeContext}
     for (k,lctx) in srcCtx
-        if "source context" in keys(ctx.styles)
-            lctx = ctx.styles["source context"] 
-        end
         local dates, values, title = fetchData!(ctx.store, attr, lctx, ctx.minDate, ctx.maxDate)
         
         # TODO: mini und max
@@ -46,6 +46,9 @@ function renderWidget!(attr::DataAttribute, ctx::PlotContext)
     local label = attr.property
     if "stacked" in keys(ctx.styles)
         label *= " (stacked)"
+    end
+    if "append to label" in keys(ctx.styles)
+        label *= " " * ctx.styles["append to label"]
     end
 
     local color = ctx.styles["color"]

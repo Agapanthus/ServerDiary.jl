@@ -63,8 +63,6 @@ function fetchData!(
     end
 
     return pseudoColumn(dataLines[attribute.property],1), pseudoColumn(dataLines[attribute.property],2), ("Aws", attribute.property)
-
-    # TODO: We need a feature to select all data lines matching something, e.g. all Groups
 end
 
 

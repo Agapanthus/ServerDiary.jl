@@ -54,10 +54,11 @@ QPlot(
 
 mutable struct QStack <: QueryStruct
     stacked::Array{<:QueryStruct,1}
+    ctxs::Union{Array{DataAttributeContext, 1},Nothing}
 end
 # stacks the select lines
-#QStack(data::Array{<:QueryStruct,1}) = QStack(data)
-QStack(content::QueryStruct) = QStack([content])
+QStack(data::Array{<:QueryStruct,1}; ctxs = nothing) = QStack(data, ctxs)
+QStack(content::QueryStruct; ctxs = nothing) = QStack([content], ctxs)
 
 
 # overrides the default styles for the given data
@@ -77,6 +78,7 @@ mutable struct QGroup <: QueryStruct
     min::Union{Nothing,<:Number}
     log::Bool
     data::Array{<:QueryStruct,1}
+    ctxs::Union{Array{DataAttributeContext, 1},Nothing}
 end
 # assigns the unit to this group. Use this, to plot different units in the same plot
 QGroup(
@@ -85,13 +87,8 @@ QGroup(
     min::Union{Nothing,<:Number} = nothing,
     log::Bool = false,
     data::Array{<:QueryStruct,1} = [],
-) = QGroup(unit, max, min, log, data)
-
-mutable struct QContext <: QueryStruct
-    ctxs::Union{Array{DataAttributeContext, 1}, Nothing}
-    data::QueryStruct
-end
-QContext(data) = QContext(nothing, data)
+    ctxs = nothing
+) = QGroup(unit, max, min, log, data, ctxs)
 
 ###########
 
